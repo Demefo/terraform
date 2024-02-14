@@ -10,7 +10,7 @@ BACKUP_FILE="/backup/backup_$TIMESTAMP.sql"
 pg_dump > $BACKUP_FILE
 
 # Upload backup file to S3
-aws s3 cp $BACKUP_FILE s3://catchup-session/rudy/backup/
+aws s3 cp $BACKUP_FILE s3://catchup-session/
 
 # Print success message
 echo "Backup completed and uploaded to S3: $BACKUP_FILE"
