@@ -1,0 +1,97 @@
+version: '3.3'
+services:
+  petclinic:
+    build:
+      context: .
+      dockerfile: Dockerfile.multi
+    environment:
+      - SERVER_PORT=8080
+      - MYSQL_URL=jdbc:mysql://mysqlserver/petclinic
+    volumes:
+      - data:/app
+    ports:
+      - "8000:8000"
+      - "8085:8080"
+    networks:
+      - clinicnet
+    depends_on:
+      - redis-0
+      - mysql
+
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=petclinic
+      - MYSQL_PASSWORD=petclinic
+      - MYSQL_DATABASE=petclinic
+    volumes:
+      - mysql_config:/etc/mysql/conf.d
+    networks:
+      - clinicnet
+
+  redis-0:
+    image: redis:4.0.2
+    volumes:
+      - redis0:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - clinicnet
+
+  redis-1:
+    image: redis:4.0.2
+    volumes:
+      - redis1:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - clinicnet
+
+  redis-2:
+    image: redis:4.0.2
+    volumes:
+      - redis2:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - clinicnet
+
+  sentinel-01:
+    image: redis:4.0.2
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - sentinel_data_01:/etc/redis/sentinel.conf
+    networks:
+      - clinicnet
+    depends_on:
+      - redis-0
+  sentinel-02:
+    image: redis:4.0.2
+    container_name: sentinel-02
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - sentinel_data_02:/etc/redis/sentinel.conf
+    networks:
+      - clinicnet
+
+  sentinel-03:
+    image: redis:4.0.2
+    container_name: sentinel-03
+    command: redis-sentinel /etc/redis/sentinel.conf
+    volumes:
+      - sentinel_data_03:/etc/redis/sentinel.conf
+    networks:
+      - clinicnet
+
+volumes:
+  redis0:
+  redis1:
+  redis2:
+  data:
+  sentinel_data_01:
+  sentinel_data_02:
+  sentinel_data_03:
+  mysql_config:
+
+networks:
+  clinicnet:
+    driver: bridge
