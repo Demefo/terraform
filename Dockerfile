@@ -7,7 +7,7 @@ COPY . .
 
 
 # Stage 2: Serve the application with Alpine
-FROM alpine:3.14
+FROM alpine:3.16
 RUN apk add --no-cache nodejs
 COPY --from=builder /app ./
 CMD ["node", "server.js"]
