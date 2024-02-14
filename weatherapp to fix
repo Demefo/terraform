@@ -1,0 +1,76 @@
+version: '3'
+
+services:
+  # Database Service
+  db:
+    container_name: my_db
+    image: devopseasylearning/tarzan-db:v0.0.1
+    environment:
+      - MYSQL_ROOT_PASSWORD=my-secret-pw
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - my_network
+    restart: always
+
+  # Authentication Service
+  auth:
+    container_name: my_auth
+    image: devopseasylearning/tarzan-auth:v0.0.1
+    environment:
+      - DATABASE_URL=mongodb://my_db:27017/authdb
+      - DB_HOST=my_db
+      - DB_PASSWORD=my-secret-pw
+    depends_on:
+      - db
+    networks:
+      - my_network
+    restart: always
+
+  # Redis Service
+  redis:
+    container_name: my_redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_USER=redis
+      - REDIS_PASSWORD=redis
+    networks:
+      - my_network
+    restart: always
+
+  # Weather Service
+  weather:
+    container_name: my_weather
+    image: devopseasylearning/tarzan-weather:v0.0.1
+    ports:
+    - 
+    environment:
+      - APIKEY=ecbc396f46mshb65cbb1f82cf334p1fcc87jsna5e962a3c542
+      - REDIS_URL=redis://my_redis:6379/0
+    networks:
+      - my_network
+    restart: always
+
+  # UI Service
+  ui:
+    container_name: my_ui
+    image: devopseasylearning/tarzan-ui:v0.0.1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth
+      - redis
+      - weather
+    networks:
+      - my_network
+    restart: always
+
+networks:
+  my_network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  mongo-data:
