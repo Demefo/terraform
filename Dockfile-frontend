@@ -1,0 +1,48 @@
+FROM node:14
+# Expose port 3000
+EXPOSE 3000
+# Set the working directory in the container
+WORKDIR /usr/src/app
+VOLUME /usr/src/app
+
+# Copy package.json and yarn.lock to install dependencies
+COPY yarn/*.json ./
+COPY yarn/yarn.lock ./
+COPY yarn/*.ts ./
+
+COPY storefront-angular-starter-0.1.25/src/*.json ./
+#COPY storefront-angular-starter-0.1.25/src/yarn.lock ./
+COPY storefront-angular-starter-0.1.25/src/*.ts ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile --production=false --ignore-optional
+
+# Install TypeScript globally (choose the appropriate version)
+RUN npm install -g typescript@4.2.4
+
+# Install TypeScript locally (optional, if needed)
+RUN npm install typescript@4.2.4 --save-dev
+
+# Check if TypeScript is already installed locally, if not, add it
+RUN yarn list --depth=0 | grep -q 'typescript' || yarn add typescript@4.2.4 --dev
+
+# Install dependencies
+# RUN yarn install --frozen-lockfile --production=false
+# Install TypeScript as a devDependency if not already present
+# RUN npm install -g typescript
+# RUN yarn install --frozen-lockfile --production=false --ignore-optional
+# RUN npm install typescript --save-dev
+# RUN yarn list --depth=0 | grep -q 'typescript' || yarn add typescript --dev
+COPY . .
+# Run TypeScript compiler using explicit path
+#RUN /usr/local/bin/tsc
+RUN yarn run tsc
+# Make sure the wait-for-it.sh script has executable permissions
+RUN chmod +x /usr/src/app/wait-for-it.sh
+
+# Build the TypeScript code
+RUN yarn run build
+
+# Specify the command to run on container start
+CMD ["yarn", "start"]
+

@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  yelb-ui:
+    image: mreferre/yelb-ui:0.7
+    container_name: yelb-ui
+    ports:
+      - 80:80
+    depends_on:
+      - yelb-appserver
+    networks:
+      - odilia
+  
+  yelb-appserver:
+    image: mreferre/yelb-appserver:0.5 
+    container_name: yelb-appserver
+    depends_on: 
+      - yelb-db
+    networks:
+      - odilia
+  
+  yelb-db:
+    image: mreferre/yelb-db:0.5
+    container_name: yelb-db
+    volumes:
+      - steph:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - odilia
+
+  odilia-db-replication03:
+    image: mreferre/yelb-db:0.5
+    container_name: odilia-db-replication03
+    volumes:
+      - steph3:/var/lib/postgresql/data
+    networks:
+      - odilia
+
+  odilia-db-replication02:
+    image: mreferre/yelb-db:0.5
+    container_name: odilia-db-replication02
+    volumes:
+      - steph2:/var/lib/postgresql/data
+    networks:
+      - odilia
+
+  odilia-db-replication01:
+    image: mreferre/yelb-db:0.5
+    container_name: odilia-db-replication01
+    volumes:
+      - steph1:/var/lib/postgresql/data
+    networks:
+      - odilia
+
+  redis-server:
+    image: redis:4.0.2
+    container_name: redis-server
+    volumes:
+      - gwen:/etc/redis/redis.conf
+    networks:
+      - odilia
+
+  odilia-redis01:
+    image: redis:4.0.2
+    container_name: odilia-redis01
+    volumes:
+      - gwen1:/etc/redis/redis.conf
+    networks:
+      - odilia 
+    command: redis-server /etc/redis/redis.conf
+    
+  odilia-redis02: 
+    image: redis:4.0.2
+    container_name: odilia-redis02
+    volumes:
+      - gwen2:/etc/redis/redis.conf
+    networks:
+      - odilia
+    command: redis-server /etc/redis/redis.conf
+
+  odilia-redis-sentinel01:
+    image: redis:4.0.2
+    container_name: odilia-redis-sentinel01
+    volumes:
+      - clar:/etc/redis/sentinel.conf
+    networks:
+      - odilia
+    command: redis-sentinel /etc/redis/sentinel.conf
+
+  odilia-redis-sentinel02:
+    image: redis:4.0.2
+    container_name: odilia-redis-sentinel02
+    volumes:
+      - clar1:/etc/redis/sentinel.conf
+    networks:
+      - odilia
+    command: redis-sentinel /etc/redis/sentinel.conf
+
+  odilia-redis-sentinel03:
+    image: redis:4.0.2
+    container_name: odilia-redis-sentinel03
+    volumes:
+      - clar2:/etc/redis/sentinel.conf
+    networks:
+      - odilia 
+    command: redis-sentinel /etc/redis/sentinel.conf
+
+networks:
+  odilia:
+    driver: bridge
+
+volumes:
+  steph:
+    driver: local
+  steph1:
+    driver: local
+  steph2:
+    driver: local
+  steph3:
+    driver: local
+  gwen:
+    driver: local
+  gwen1:
+    driver: local
+  gwen2:
+    driver: local
+  clar:
+    driver: local
+  clar1:
+    driver: local
+  clar2:
+    driver: local
